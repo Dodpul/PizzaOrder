@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Place Your Pizza Order{% endblock %}
+
+{% block body %}
+<h1>Place Your Pizza Order</h1>
+
+{# Display flash messages #}
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert alert-{{ label }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endfor %}
+
+{{ form_start(form) }}
+    {{ form_row(form.name) }}
+    {{ form_row(form.email) }}
+    {{ form_row(form.pizza) }}
+    {{ form_row(form.size) }}
+    
+    <h3>Toppings</h3>
+    {{ form_row(form.toppings) }}
+    
+    {{ form_row(form.comment) }}
+
+    {# <button type="submit" class="btn btn-primary">{{ form.submit.vars.label }}</button> #}
+{{ form_end(form) }}
+
+{% endblock %}
