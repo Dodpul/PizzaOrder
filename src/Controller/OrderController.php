@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Customer;
-use App\Entity\Order;
+use App\Entity\Orders;
 use App\Entity\OrderItem;
 use App\Entity\Pizzas;
 use App\Entity\Sizes;
@@ -77,7 +77,7 @@ class OrderController extends AbstractController
             }
 
             // Create Order entity
-            $order = new Order();
+            $order = new Orders();
             $order->setCustomer($customer);
             $order->setCustomerComment($data['comment']);
             $order->setSize($sizeRepo->find($data['size']));
@@ -106,7 +106,7 @@ class OrderController extends AbstractController
             return $this->redirectToRoute('order_form');
         }
 
-        return $this->render('order/index.html.twig', [
+        return $this->render('orders/index.html.twig', [
             'form' => $form->createView(),
         ]);
     }

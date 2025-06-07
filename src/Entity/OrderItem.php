@@ -15,9 +15,9 @@ class OrderItem
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Order::class, inversedBy: 'orderItems')]
+    #[ORM\ManyToOne(targetEntity: Orders::class, inversedBy: 'orderItems')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Order $order = null;
+    private ?Orders $order = null;
 
     #[ORM\ManyToOne(targetEntity: Pizzas::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -44,12 +44,12 @@ class OrderItem
         return $this->id;
     }
 
-    public function getOrder(): ?Order
+    public function getOrder(): ?Orders
     {
         return $this->order;
     }
 
-    public function setOrder(?Order $order): static
+    public function setOrder(?Orders $order): static
     {
         $this->order = $order;
         return $this;

@@ -4,15 +4,21 @@ namespace App\Entity;
 
 use App\Repository\OrdersRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: OrdersRepository::class)]
-#[ORM\Table(name: "orders")]  
-class Order
+#[ORM\Table(name: "orders")]
+class Orders
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private ?\DateTimeImmutable $createdAt = null;
 
     // Each order is placed by one customer
     #[ORM\ManyToOne(targetEntity: Customer::class)]
@@ -32,9 +38,29 @@ class Order
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $customerComment = null;
 
+    #[ORM\OneToMany(mappedBy: 'order', targetEntity: OrderItem::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $orderItems;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+        $this->orderItems = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+        return $this;
     }
 
     public function getCustomer(): ?Customer
@@ -75,9 +101,37 @@ class Order
         return $this->customerComment;
     }
 
-    public function setCustomerComment(?string $comment): static
+    public function setCustomerComment(?string $customerComment): static
     {
-        $this->customerComment = $comment;
+        $this->customerComment = $customerComment;
+        return $this;
+    }
+
+    /**
+     * @return Collection|OrderItem[]
+     */
+    public function getOrderItems(): Collection
+    {
+        return $this->orderItems;
+    }
+
+    public function addOrderItem(OrderItem $orderItem): static
+    {
+        if (!$this->orderItems->contains($orderItem)) {
+            $this->orderItems->add($orderItem);
+            $orderItem->setOrder($this);
+        }
+        return $this;
+    }
+
+    public function removeOrderItem(OrderItem $orderItem): static
+    {
+        if ($this->orderItems->removeElement($orderItem)) {
+            // Set the owning side to null (unless already changed)
+            if ($orderItem->getOrder() === $this) {
+                $orderItem->setOrder(null);
+            }
+        }
         return $this;
     }
 }

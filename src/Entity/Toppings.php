@@ -14,7 +14,7 @@ class Toppings
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
-    private ?string $Description = null;
+    private ?string $description = null;
 
     public function getId(): ?int
     {
@@ -23,13 +23,12 @@ class Toppings
 
     public function getDescription(): ?string
     {
-        return $this->Description;
+        return $this->description;
     }
 
-    public function setDescription(string $Description): static
+    public function setDescription(string $description): static
     {
-        $this->Description = $Description;
-
+        $this->description = $description;
         return $this;
     }
 }

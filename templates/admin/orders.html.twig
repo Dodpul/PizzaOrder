@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin Orders{% endblock %}
+
+{% block body %}
+<h1>Admin Panel - Orders</h1>
+
+<table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Size</th>
+            <th>Pizza</th>
+            <th>Toppings</th>
+            <th>Comment</th>
+            <th>Order Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+            <tr>
+                <td>{{ order.customer.name }}</td>
+                <td>{{ order.customer.email }}</td>
+                <td>{{ order.size.size }}</td>
+                <td>{{ order.pizza.name }}</td>
+                <td>
+                    {% if order.orderItems is defined and order.orderItems|length > 0 %}
+                        {% for item in order.orderItems %}
+                            {{ item.toppings|map(t => t.description)|join(', ') }}<br>
+                        {% endfor %}
+                    {% else %}
+                        No toppings
+                    {% endif %}
+                </td>
+                <td>{{ order.customerComment ?: '—' }}</td>
+                <td>{{ order.createdAt ? order.createdAt|date('Y-m-d H:i', 'Europe/Sofia') : '—' }}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="7">No orders found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
