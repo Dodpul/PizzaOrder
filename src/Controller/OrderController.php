@@ -20,7 +20,7 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 class OrderController extends AbstractController
 {
-    #[Route('/', name: 'order_form')]
+    #[Route('/order', name: 'order_form')]
     public function index(Request $request, EntityManagerInterface $em): Response
     {
         // Load repositories once to reduce code duplication
@@ -64,50 +64,69 @@ class OrderController extends AbstractController
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        $errors = [];
+
+        if ($form->isSubmitted()) {
             $data = $form->getData();
 
-            // Find existing customer or create new
-            $customer = $customerRepo->findOneBy(['email' => $data['email']]);
-            if (!$customer) {
-                $customer = new Customer();
-                $customer->setName($data['name']);
-                $customer->setEmail($data['email']);
-                $em->persist($customer);
+            $name = trim($data['name']);
+            $email = trim($data['email']);
+
+            // Validation for name and email
+            if (empty($name)) {
+                $errors[] = 'Name is required.';
             }
 
-            // Create Order entity
-            $order = new Orders();
-            $order->setCustomer($customer);
-            $order->setCustomerComment($data['comment']);
-            $order->setSize($sizeRepo->find($data['size']));
-            $order->setPizza($pizzaRepo->find($data['pizza']));
-            $em->persist($order);
+            if (empty($email)) {
+                $errors[] = 'Email is required.';
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = 'Please enter a valid email address.';
+            }
 
-            // Create OrderItem entity
-            $orderItem = new OrderItem();
-            $orderItem->setOrder($order);
-            $orderItem->setPizza($pizzaRepo->find($data['pizza']));
-            $orderItem->setSize($sizeRepo->find($data['size']));
-
-            // Add toppings (ManyToMany)
-            foreach ($data['toppings'] as $toppingId) {
-                $topping = $toppingRepo->find($toppingId);
-                if ($topping) {
-                    $orderItem->addTopping($topping);
+            if (empty($errors) && $form->isValid()) {
+                // Find existing customer or create new
+                $customer = $customerRepo->findOneBy(['email' => $email]);
+                if (!$customer) {
+                    $customer = new Customer();
+                    $customer->setName($name);
+                    $customer->setEmail($email);
+                    $em->persist($customer);
                 }
+
+                // Create Order entity
+                $order = new Orders();
+                $order->setCustomer($customer);
+                $order->setCustomerComment($data['comment']);
+                $order->setSize($sizeRepo->find($data['size']));
+                $order->setPizza($pizzaRepo->find($data['pizza']));
+                $em->persist($order);
+
+                // Create OrderItem entity
+                $orderItem = new OrderItem();
+                $orderItem->setOrder($order);
+                $orderItem->setPizza($pizzaRepo->find($data['pizza']));
+                $orderItem->setSize($sizeRepo->find($data['size']));
+
+                // Add toppings (ManyToMany)
+                foreach ($data['toppings'] as $toppingId) {
+                    $topping = $toppingRepo->find($toppingId);
+                    if ($topping) {
+                        $orderItem->addTopping($topping);
+                    }
+                }
+
+                $em->persist($orderItem);
+
+                $em->flush();
+
+                $this->addFlash('success', 'Order placed successfully!');
+                return $this->redirectToRoute('order_form');
             }
-
-            $em->persist($orderItem);
-
-            $em->flush();
-
-            $this->addFlash('success', 'Order placed successfully!');
-            return $this->redirectToRoute('order_form');
         }
 
-        return $this->render('orders/index.html.twig', [
+        return $this->render('order/index.html.twig', [
             'form' => $form->createView(),
+            'errors' => $errors,
         ]);
     }
 }

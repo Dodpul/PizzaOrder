@@ -14,6 +14,17 @@
     {% endfor %}
 {% endfor %}
 
+{# Display manual validation errors (name/email) #}
+{% if errors is defined and errors|length > 0 %}
+    <div class="alert alert-danger">
+        <ul>
+            {% for error in errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
 {{ form_start(form) }}
     {{ form_row(form.name) }}
     {{ form_row(form.email) }}
@@ -25,7 +36,6 @@
     
     {{ form_row(form.comment) }}
 
-    {# <button type="submit" class="btn btn-primary">{{ form.submit.vars.label }}</button> #}
 {{ form_end(form) }}
 
 {% endblock %}
